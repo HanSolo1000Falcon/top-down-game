@@ -1,3 +1,4 @@
+#include <memory>
 #include <raylib.h>
 #include <vector>
 
@@ -7,14 +8,20 @@ protected:
   virtual void Render() = 0;
 
 public:
-  static std::vector<Object *> AllObjects;
+  static std::vector<std::unique_ptr<Object>> AllObjects;
+
+  template <typename T, typename... Args> static T *Create(Args &&...args) {
+    auto object = std::make_unique<T>(std::forward<Args>(args)...);
+    T *raw = object.get();
+    AllObjects.emplace_back(std::move(object));
+    raw->Awake();
+    return raw;
+  }
 
   Vector2 size{0, 0};
   Vector2 position{0, 0};
 
-  // Yet again Render() and Awake() calls are abstracted away.
-  Object();
-  virtual ~Object() = 0;
+  virtual ~Object() = default;
 
   void CallRender();
 };

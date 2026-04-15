@@ -1,12 +1,15 @@
 #include <entities/entity.hpp>
 #include <objects/object.hpp>
 
-Entity::Entity() { Awake(); }
+std::vector<std::unique_ptr<Entity>> Entity::AllEntities;
+
 void Entity::CallTick(const float &frameDelta) { Tick(frameDelta); }
 void Entity::CallRender() { Render(); }
 
 bool Entity::IsCurrentlyColliding() {
-  for (const auto object : Object::AllObjects) {
+  for (auto i = 0; i < Object::AllObjects.size(); ++i) {
+    const auto object = Object::AllObjects.at(i).get();
+
     const auto ourRight = position.x + size.x;
     const auto ourBottom = position.y + size.y;
 
