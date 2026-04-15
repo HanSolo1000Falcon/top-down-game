@@ -11,6 +11,9 @@ add_executable(top_down_game
                 src/main.cpp
                 src/game-manager.cpp
                 src/entities/entity.cpp
+                src/objects/object.cpp
+                src/objects/temp.cpp
+                src/entities/temp.cpp
             )
 
 target_include_directories(top_down_game PRIVATE include)
