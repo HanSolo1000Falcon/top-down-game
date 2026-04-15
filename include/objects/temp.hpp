@@ -1,3 +1,5 @@
+#pragma once
+
 #include <objects/object.hpp>
 
 class TempObject : public Object {
