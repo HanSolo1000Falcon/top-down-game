@@ -48,6 +48,11 @@ void Player::Tick(const float &frameDelta) {
   } else if (velocity.x < -constants::MAX_PLAYER_SPEED) {
     velocity.x = -constants::MAX_PLAYER_SPEED;
   }
+
+  const auto collidingResult = IsCurrentlyColliding();
+
+  if (collidingResult.isColliding) {
+  }
 }
 
 void Player::Render() { DrawRectangleV(position, size, GRAY); }
