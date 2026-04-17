@@ -1,12 +1,17 @@
-#include <entities/entity.hpp>
-#include <objects/object.hpp>
+#include "entities/entity.hpp"
+#include "entities/colliding-result.hpp"
+#include "objects/object.hpp"
 
 std::vector<std::unique_ptr<Entity>> Entity::AllEntities;
 
-void Entity::CallTick(const float &frameDelta) { Tick(frameDelta); }
+void Entity::CallTick(const float &frameDelta) {
+  Tick(frameDelta);
+  position.x += velocity.x * frameDelta;
+  position.y += velocity.y * frameDelta;
+}
 void Entity::CallRender() { Render(); }
 
-bool Entity::IsCurrentlyColliding() {
+CollidingResult Entity::IsCurrentlyColliding() {
   for (auto i = 0; i < Object::AllObjects.size(); ++i) {
     const auto object = Object::AllObjects.at(i).get();
 
@@ -22,9 +27,9 @@ bool Entity::IsCurrentlyColliding() {
         ourBottom > object->position.y && position.y < theirBottom;
 
     if (overlapsX && overlapsY) {
-      return true;
+      return {true, object};
     }
   }
 
-  return false;
+  return {false, nullptr};
 }

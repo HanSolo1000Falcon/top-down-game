@@ -1,5 +1,6 @@
 #pragma once
 
+#include "entities/colliding-result.hpp"
 #include <memory>
 #include <raylib.h>
 #include <vector>
@@ -34,5 +35,5 @@ public:
   void CallTick(const float &frameDelta);
   void CallRender();
 
-  bool IsCurrentlyColliding();
+  CollidingResult IsCurrentlyColliding();
 };

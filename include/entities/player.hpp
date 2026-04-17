@@ -1,8 +1,8 @@
 #pragma once
 
-#include <entities/entity.hpp>
+#include "entities/entity.hpp"
 
-class TempEntity : public Entity {
+class Player : public Entity {
   friend class Entity;
 
 protected:
@@ -11,5 +11,5 @@ protected:
   void Render() override;
 
 public:
-  ~TempEntity() override = default;
+  ~Player() override = default;
 };

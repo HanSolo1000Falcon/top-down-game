@@ -1,14 +1,11 @@
-#include <entities/entity.hpp>
-#include <entities/temp.hpp>
-#include <game-manager.hpp>
-#include <objects/object.hpp>
-#include <objects/temp.hpp>
+#include "game-manager.hpp"
+#include "entities/entity.hpp"
+#include "entities/player.hpp"
+#include "objects/object.hpp"
 #include <raylib.h>
 
 int StartTick() {
-  Entity::Create<TempEntity>();
-
-  Object::Create<TempObject>();
+  Entity::Create<Player>();
 
   while (!WindowShouldClose()) {
     const auto frameDelta = GetFrameTime();
