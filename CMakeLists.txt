@@ -13,6 +13,7 @@ add_executable(top_down_game
                 src/entities/entity.cpp
                 src/objects/object.cpp
                 src/entities/player.cpp
+                src/objects/customizable-object.cpp
             )
 
 target_include_directories(top_down_game PRIVATE include)

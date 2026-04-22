@@ -1,10 +1,58 @@
 #include "entities/player.hpp"
 #include "constants.hpp"
+#include "vector2-ext.hpp"
+#include <algorithm>
 #include <raylib.h>
+#include <vector>
 
 void Player::Awake() {
   position = {constants::WINDOW_WIDTH / 2.0f, constants::WINDOW_HEIGHT / 2.0f};
   size = {50, 50};
+}
+
+Vector2 ClosestPointOnSegment(Vector2 a, Vector2 b, Vector2 point) {
+  Vector2 ap = Vector2Ext::Difference(point, a);
+  Vector2 ab = Vector2Ext::Difference(b, a);
+  return Vector2Ext::Add(
+      a, Vector2Ext::Multiply(ab, std::clamp(Vector2Ext::Dot(ap, ab) /
+                                                 Vector2Ext::SquaredSize(ab),
+                                             0, 1)));
+}
+
+Vector2 GetPoint(int i, Vector2 position, Vector2 size) {
+  switch (i) {
+  case 1:
+    return {position.x + size.x, position.y};
+
+  case 2:
+    return {position.x + size.x, position.y + size.y};
+
+  case 3:
+    return {position.x, position.y + size.y};
+
+  default:
+    return position;
+  }
+}
+
+Vector2 ClosestPointOnObject(Vector2 objectSize, Vector2 objectPosition,
+                             Vector2 point) {
+  std::vector<Vector2> points{};
+
+  for (auto i = 0; i < 4; ++i) {
+    auto nextI = (i + 1) % 4;
+    auto ithPoint = GetPoint(i, position, size);
+    auto nextIthPoint = GetPoint(nextI, position, size);
+    points.emplace_back(ClosestPointOnSegment(ithPoint, nextIthPoint, point));
+  }
+
+  std::vector<int> distances{};
+
+  for (auto closestPoint : points) {
+    distances.emplace_back(Vector2Ext::DistanceSquared(point, closestPoint));
+  }
+
+  Vector2 closestPoint;
 }
 
 void Player::Tick(const float &frameDelta) {
