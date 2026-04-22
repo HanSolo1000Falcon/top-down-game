@@ -2,6 +2,7 @@
 #include "constants.hpp"
 #include "vector2-ext.hpp"
 #include <algorithm>
+#include <cfloat>
 #include <raylib.h>
 #include <vector>
 
@@ -16,7 +17,7 @@ Vector2 ClosestPointOnSegment(Vector2 a, Vector2 b, Vector2 point) {
   return Vector2Ext::Add(
       a, Vector2Ext::Multiply(ab, std::clamp(Vector2Ext::Dot(ap, ab) /
                                                  Vector2Ext::SquaredSize(ab),
-                                             0, 1)));
+                                             0.0f, 1.0f)));
 }
 
 Vector2 GetPoint(int i, Vector2 position, Vector2 size) {
@@ -46,14 +47,14 @@ Vector2 ClosestPointOnObject(Vector2 objectSize, Vector2 objectPosition,
     points.emplace_back(ClosestPointOnSegment(ithPoint, nextIthPoint, point));
   }
 
-  std::vector<int> distances{};
+  std::vector<float> distances{};
 
   for (auto closestPoint : points) {
     distances.emplace_back(Vector2Ext::DistanceSquared(point, closestPoint));
   }
 
   Vector2 closestPoint;
-  int closestDistance = 99999;
+  float closestDistance = FLT_MAX;
 
   for (auto i = 0; i < points.size(); ++i) {
     auto distance = distances.at(i);
@@ -94,6 +95,13 @@ void Player::Tick(const float &frameDelta) {
     if (velocity.x != 0) {
       velocity.x -= frictionAddition * (velocity.x > 0 ? 1 : -1);
     }
+
+    if (velocity.y < 1 && velocity.y >= -1) {
+      velocity.y = 0;
+    }
+    if (velocity.x < 1 && velocity.x >= -1) {
+      velocity.x = 0;
+    }
   }
 
   if (velocity.y > constants::MAX_PLAYER_SPEED) {
@@ -114,6 +122,8 @@ void Player::Tick(const float &frameDelta) {
     position =
         ClosestPointOnObject(collidingResult.collidingWith->size,
                              collidingResult.collidingWith->position, position);
+    velocity.x = 0;
+    velocity.y = 0;
   }
 }
 
