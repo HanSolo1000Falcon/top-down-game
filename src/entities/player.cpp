@@ -24,13 +24,10 @@ Vector2 GetPoint(int i, Vector2 position, Vector2 size) {
   switch (i) {
   case 1:
     return {position.x + size.x, position.y};
-
   case 2:
     return {position.x + size.x, position.y + size.y};
-
   case 3:
     return {position.x, position.y + size.y};
-
   default:
     return position;
   }
@@ -47,20 +44,14 @@ Vector2 ClosestPointOnObject(Vector2 objectSize, Vector2 objectPosition,
     points.emplace_back(ClosestPointOnSegment(ithPoint, nextIthPoint, point));
   }
 
-  std::vector<float> distances{};
-
-  for (auto closestPoint : points) {
-    distances.emplace_back(Vector2Ext::DistanceSquared(point, closestPoint));
-  }
-
-  Vector2 closestPoint;
+  Vector2 closestPoint = points[0];
   float closestDistance = FLT_MAX;
 
   for (auto i = 0; i < points.size(); ++i) {
-    auto distance = distances.at(i);
+    float distance = Vector2Ext::DistanceSquared(point, points[i]);
     if (distance < closestDistance) {
       closestDistance = distance;
-      closestPoint = points.at(i);
+      closestPoint = points[i];
     }
   }
 
@@ -73,57 +64,89 @@ void Player::Tick(const float &frameDelta) {
   const auto movingLeft = IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT);
   const auto movingRight = IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT);
 
-  if (movingUp || movingDown || movingLeft || movingRight) {
-    const auto velocityAddition = constants::PLAYER_SPEED * frameDelta;
-    if (movingUp) {
-      velocity.y -= velocityAddition;
-    } else if (movingDown) {
-      velocity.y += velocityAddition;
-    }
+  Vector2 inputDir = {0, 0};
+  if (movingUp) {
+    inputDir.y -= 1.0f;
+  }
+  if (movingDown) {
+    inputDir.y += 1.0f;
+  }
+  if (movingLeft) {
+    inputDir.x -= 1.0f;
+  }
+  if (movingRight) {
+    inputDir.x += 1.0f;
+  }
 
-    if (movingLeft) {
-      velocity.x -= velocityAddition;
-    } else if (movingRight) {
-      velocity.x += velocityAddition;
-    }
+  if (inputDir.x != 0 || inputDir.y != 0) {
+    float mag = Vector2Ext::Magnitude(inputDir);
+    inputDir = Vector2Ext::Multiply(inputDir, 1.0f / mag);
+
+    Vector2 targetVelocity =
+        Vector2Ext::Multiply(inputDir, constants::MAX_PLAYER_SPEED);
+    float accel = constants::PLAYER_SPEED * frameDelta;
+    velocity.x =
+        std::clamp(velocity.x + (targetVelocity.x - velocity.x) * accel /
+                                    constants::MAX_PLAYER_SPEED,
+                   -constants::MAX_PLAYER_SPEED, constants::MAX_PLAYER_SPEED);
+    velocity.y =
+        std::clamp(velocity.y + (targetVelocity.y - velocity.y) * accel /
+                                    constants::MAX_PLAYER_SPEED,
+                   -constants::MAX_PLAYER_SPEED, constants::MAX_PLAYER_SPEED);
   } else {
-    const auto frictionAddition = constants::PLAYER_FRICTION * frameDelta;
+    float frictionFactor =
+        1.0f - std::min(constants::PLAYER_FRICTION * frameDelta /
+                            constants::MAX_PLAYER_SPEED,
+                        1.0f);
+    velocity.x *= frictionFactor;
+    velocity.y *= frictionFactor;
 
-    if (velocity.y != 0) {
-      velocity.y -= frictionAddition * (velocity.y > 0 ? 1 : -1);
-    }
-    if (velocity.x != 0) {
-      velocity.x -= frictionAddition * (velocity.x > 0 ? 1 : -1);
-    }
-
-    if (velocity.y < 1 && velocity.y >= -1) {
-      velocity.y = 0;
-    }
-    if (velocity.x < 1 && velocity.x >= -1) {
+    if (std::abs(velocity.x) < 1.0f) {
       velocity.x = 0;
     }
-  }
-
-  if (velocity.y > constants::MAX_PLAYER_SPEED) {
-    velocity.y = constants::MAX_PLAYER_SPEED;
-  } else if (velocity.y < -constants::MAX_PLAYER_SPEED) {
-    velocity.y = -constants::MAX_PLAYER_SPEED;
-  }
-
-  if (velocity.x > constants::MAX_PLAYER_SPEED) {
-    velocity.x = constants::MAX_PLAYER_SPEED;
-  } else if (velocity.x < -constants::MAX_PLAYER_SPEED) {
-    velocity.x = -constants::MAX_PLAYER_SPEED;
+    if (std::abs(velocity.y) < 1.0f) {
+      velocity.y = 0;
+    }
   }
 
   const auto collidingResult = IsCurrentlyColliding();
 
   if (collidingResult.isColliding) {
-    position =
-        ClosestPointOnObject(collidingResult.collidingWith->size,
-                             collidingResult.collidingWith->position, position);
-    velocity.x = 0;
-    velocity.y = 0;
+    auto &other = *collidingResult.collidingWith;
+
+    const auto overlapLeft = (position.x + size.x) - other.position.x;
+    const auto overlapRight = (other.position.x + other.size.x) - position.x;
+    const auto overlapTop = (position.y + size.y) - other.position.y;
+    const auto overlapBottom = (other.position.y + other.size.y) - position.y;
+
+    const auto minOverlapX = std::min(overlapLeft, overlapRight);
+    const auto minOverlapY = std::min(overlapTop, overlapBottom);
+
+    if (minOverlapX < minOverlapY) {
+      if (overlapLeft < overlapRight) {
+        position.x -= overlapLeft;
+        if (velocity.x > 0) {
+          velocity.x = 0;
+        }
+      } else {
+        position.x += overlapRight;
+        if (velocity.x < 0) {
+          velocity.x = 0;
+        }
+      }
+    } else {
+      if (overlapTop < overlapBottom) {
+        position.y -= overlapTop;
+        if (velocity.y > 0) {
+          velocity.y = 0;
+        }
+      } else {
+        position.y += overlapBottom;
+        if (velocity.y < 0) {
+          velocity.y = 0;
+        }
+      }
+    }
   }
 }
 

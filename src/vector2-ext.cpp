@@ -9,6 +9,8 @@ float Vector2Ext::Distance(Vector2 a, Vector2 b) {
   return sqrt(xDist * xDist + yDist * yDist);
 }
 
+float Vector2Ext::Magnitude(Vector2 a) { return sqrt(Dot(a, a)); }
+
 float Vector2Ext::SquaredSize(Vector2 a) { return a.x * a.x + a.y * a.y; }
 
 Vector2 Vector2Ext::Difference(Vector2 a, Vector2 b) {
