@@ -41,8 +41,8 @@ Vector2 ClosestPointOnObject(Vector2 objectSize, Vector2 objectPosition,
 
   for (auto i = 0; i < 4; ++i) {
     auto nextI = (i + 1) % 4;
-    auto ithPoint = GetPoint(i, position, size);
-    auto nextIthPoint = GetPoint(nextI, position, size);
+    auto ithPoint = GetPoint(i, objectPosition, objectSize);
+    auto nextIthPoint = GetPoint(nextI, objectPosition, objectSize);
     points.emplace_back(ClosestPointOnSegment(ithPoint, nextIthPoint, point));
   }
 
@@ -53,6 +53,17 @@ Vector2 ClosestPointOnObject(Vector2 objectSize, Vector2 objectPosition,
   }
 
   Vector2 closestPoint;
+  int closestDistance = 99999;
+
+  for (auto i = 0; i < points.size(); ++i) {
+    auto distance = distances.at(i);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestPoint = points.at(i);
+    }
+  }
+
+  return closestPoint;
 }
 
 void Player::Tick(const float &frameDelta) {
@@ -100,6 +111,9 @@ void Player::Tick(const float &frameDelta) {
   const auto collidingResult = IsCurrentlyColliding();
 
   if (collidingResult.isColliding) {
+    position =
+        ClosestPointOnObject(collidingResult.collidingWith->size,
+                             collidingResult.collidingWith->position, position);
   }
 }
 

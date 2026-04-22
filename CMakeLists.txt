@@ -14,6 +14,7 @@ add_executable(top_down_game
                 src/objects/object.cpp
                 src/entities/player.cpp
                 src/objects/customizable-object.cpp
+                src/vector2-ext.cpp
             )
 
 target_include_directories(top_down_game PRIVATE include)
