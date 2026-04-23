@@ -1,16 +1,24 @@
 #include "game-manager.hpp"
+#include "constants.hpp"
 #include "entities/entity.hpp"
 #include "entities/player.hpp"
 #include "objects/customizable-object.hpp"
 #include "objects/object.hpp"
 #include <raylib.h>
 
+CustomizableObject *CreateCustomizableObject(Vector2 position, Vector2 size) {
+  auto object = Object::Create<CustomizableObject>();
+  object->position = position;
+  object->size = size;
+  return object;
+}
+
 int StartTick() {
   Entity::Create<Player>();
 
-  auto customObject = Object::Create<CustomizableObject>();
-  customObject->size = {500, 500};
-  customObject->position = {50, 50};
+  /*CreateCustomizableObject({0, 0}, {constants::WINDOW_WIDTH, 100});
+  CreateCustomizableObject({0, constants::WINDOW_HEIGHT - 100},
+                           {constants::WINDOW_WIDTH, 100});*/
 
   while (!WindowShouldClose()) {
     const auto frameDelta = GetFrameTime();

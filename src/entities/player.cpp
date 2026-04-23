@@ -148,6 +148,20 @@ void Player::Tick(const float &frameDelta) {
       }
     }
   }
+
+  if (position.x < -size.x - constants::PLAYER_TELEPORT_PADDING) {
+    position.x = constants::WINDOW_WIDTH;
+  } else if (position.x >
+             constants::WINDOW_WIDTH + constants::PLAYER_TELEPORT_PADDING) {
+    position.x = -size.x;
+  }
+
+  if (position.y < -size.y - constants::PLAYER_TELEPORT_PADDING) {
+    position.y = constants::WINDOW_HEIGHT;
+  } else if (position.y >
+             constants::WINDOW_HEIGHT + constants::PLAYER_TELEPORT_PADDING) {
+    position.y = -size.y;
+  }
 }
 
 void Player::Render() { DrawRectangleV(position, size, GRAY); }
